@@ -31,7 +31,7 @@ Vagrant.configure("2") do |config|
       c.vm.provision :shell, :path => "setup-router.sh"
   end
 
-  config.vm.define "server" do |c|
+  config.vm.define "vpn-server" do |c|
       c.vm.box = "centos/7"
       c.vm.hostname = "vpn-server.b.private"
       c.vm.network "private_network", ip: "192.168.100.20"
@@ -59,7 +59,7 @@ Vagrant.configure("2") do |config|
       c.vm.provision :shell, :path => "setup-web.sh"
   end
 
-  config.vm.define "client" do |c|
+  config.vm.define "vpn-client" do |c|
       c.vm.box = "centos/7"
       c.vm.hostname = "vpn-client.a.private"
       c.vm.network "private_network", ip: "192.168.0.20"
