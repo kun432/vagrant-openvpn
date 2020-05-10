@@ -55,8 +55,8 @@ Vagrant.configure("2") do |config|
         v.memory = 512
       end
       c.vm.provision :shell, :path => "setup-initial.sh"
-      c.vm.provision :shell, :path => "setup-host.sh"
       c.vm.provision :shell, :path => "setup-web.sh"
+      c.vm.provision :shell, :path => "setup-host.sh"
   end
 
   config.vm.define "vpn-client" do |c|

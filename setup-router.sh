@@ -4,7 +4,7 @@ set -euo pipefail
 
 sudo systemctl start firewalld
 sudo systemctl enable firewalld
-sudo nmcli con mod "System eth0" connection.zone public
+sudo nmcli con mod "System eth0" connection.zone external
 sudo nmcli con mod "System eth1" connection.zone external
 sudo nmcli con mod "System eth2" connection.zone trusted
 sudo nmcli con up "System eth0"
@@ -18,17 +18,40 @@ sudo firewall-cmd --zone=public --add-masquerade --permanent
 sudo firewall-cmd --set-log-denied=all
 sudo firewall-cmd --reload
 
-cat <<EOF | sudo tee -a /etc/hosts-dnsmasq
-10.0.0.10 vpn-client.a.private gw.a.private
+sudo yum install dnsmasq -y
+
+cat <<EOF | sudo tee -a /etc/hosts-a.private
+192.168.0.10 gw.a.private
+192.168.0.20 vpn-client.a.private
 10.0.0.20 vpn-server.b.private gw.b.private
 EOF
 
-sudo yum install dnsmasq -y
-cat <<EOF | sudo tee -a /etc/dnsmasq.d/local-dns.conf
-port=53
-no-hosts
-addn-hosts=/etc/hosts-dnsmasq
-expand-hosts
-domain-needed
-bogus-priv
+cat <<EOF | sudo tee -a /etc/hosts-b.private
+192.168.100.10 gw.b.private
+192.168.100.20 vpn-server.b.private
+192.168.100.30 web-server.b.private
+10.0.0.10 vpn-client.a.private gw.a.private
 EOF
+
+if [ `hostname` = "gw.a.private" ]; then
+cat <<EOF | sudo tee -a /etc/dnsmasq.d/a.private.conf
+port=53
+domain-needed
+expand-hosts
+bogus-priv
+no-hosts
+addn-hosts=/etc/hosts-a.private
+local=/a.private/
+EOF
+elif [ `hostname` = "gw.b.private" ]; then
+cat <<EOF | sudo tee -a /etc/dnsmasq.d/b.private.conf
+port=53
+domain-needed
+expand-hosts
+bogus-priv
+no-hosts
+addn-hosts=/etc/hosts-b.private
+local=/b.private/
+EOF
+fi
+
